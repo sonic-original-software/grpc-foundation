@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## 0.1.1 - 2026-03-29
+#### Bug Fixes
+- (**ci**) CI job name - (f39b6b9) - Nathan Blair
+
+- - -
+
 ## 0.1.0 - 2026-03-29
 #### Features
 - initial re-release - (75bcf48) - Nathan Blair
