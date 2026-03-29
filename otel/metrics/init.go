@@ -1,0 +1,54 @@
+// Package metrics initializes the OpenTelemetry MeterProvider.
+package metrics
+
+import (
+	"context"
+	"fmt"
+	"os"
+
+	"git.sonicoriginal.software/grpc-foundation/lifecycle"
+
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
+	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
+	"go.opentelemetry.io/otel/sdk/resource"
+	"google.golang.org/grpc/credentials/insecure"
+)
+
+const envVar = "OTEL_METRICS_EXPORTER"
+
+// Init initializes the OTel MeterProvider based on OTEL_METRICS_EXPORTER.
+//
+//   - "otlp": OTLP gRPC exporter to the provided endpoint
+//   - "" or "none": no metrics (returns noop shutdown)
+//
+// Returns a ShutdownFunc to flush and close the provider.
+func Init(
+	ctx context.Context, res *resource.Resource, endpoint string,
+) (lifecycle.ShutdownFunc, error) {
+	exporterType := os.Getenv(envVar)
+
+	if exporterType == "" || exporterType == "none" {
+		noop := func(context.Context) error { return nil }
+		return noop, nil
+	}
+
+	if exporterType != "otlp" {
+		return nil, fmt.Errorf("unsupported %s: %s (supported: otlp, none)", envVar, exporterType)
+	}
+
+	// OTLP gRPC exporters use lazy connections - they cannot fail at creation time.
+	exporter, _ := otlpmetricgrpc.New(ctx,
+		otlpmetricgrpc.WithEndpoint(endpoint),
+		otlpmetricgrpc.WithTLSCredentials(insecure.NewCredentials()),
+	)
+
+	reader := sdkmetric.NewPeriodicReader(exporter)
+	mp := sdkmetric.NewMeterProvider(
+		sdkmetric.WithReader(reader),
+		sdkmetric.WithResource(res),
+	)
+	otel.SetMeterProvider(mp)
+
+	return mp.Shutdown, nil
+}
