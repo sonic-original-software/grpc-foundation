@@ -12,7 +12,6 @@ import (
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
 const envVar = "OTEL_METRICS_EXPORTER"
@@ -24,7 +23,7 @@ const envVar = "OTEL_METRICS_EXPORTER"
 //
 // Returns a ShutdownFunc to flush and close the provider.
 func Init(
-	ctx context.Context, res *resource.Resource, endpoint string,
+	ctx context.Context, res *resource.Resource,
 ) (lifecycle.ShutdownFunc, error) {
 	exporterType := os.Getenv(envVar)
 
@@ -38,10 +37,8 @@ func Init(
 	}
 
 	// OTLP gRPC exporters use lazy connections - they cannot fail at creation time.
-	exporter, _ := otlpmetricgrpc.New(ctx,
-		otlpmetricgrpc.WithEndpoint(endpoint),
-		otlpmetricgrpc.WithTLSCredentials(insecure.NewCredentials()),
-	)
+	// Endpoint and TLS are configured via OTEL_EXPORTER_OTLP_ENDPOINT env var.
+	exporter, _ := otlpmetricgrpc.New(ctx)
 
 	reader := sdkmetric.NewPeriodicReader(exporter)
 	mp := sdkmetric.NewMeterProvider(

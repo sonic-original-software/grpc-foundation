@@ -21,11 +21,12 @@ func testResource() *resource.Resource {
 func TestInit_OTLP_LogFormatNone(t *testing.T) {
 	t.Setenv(envVar, "otlp")
 	t.Setenv("LOG_FORMAT", "none")
+	t.Setenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4317")
 
 	ctx := t.Context()
 	res := testResource()
 
-	logger, shutdown, err := Init(ctx, res, "localhost:4317", "test-service")
+	logger, shutdown, err := Init(ctx, res, "test-service")
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
@@ -48,11 +49,12 @@ func TestInit_OTLP_LogFormatNone(t *testing.T) {
 func TestInit_OTLP_LogFormatJSON(t *testing.T) {
 	t.Setenv(envVar, "otlp")
 	t.Setenv("LOG_FORMAT", "json")
+	t.Setenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4317")
 
 	ctx := t.Context()
 	res := testResource()
 
-	logger, shutdown, err := Init(ctx, res, "localhost:4317", "test-service")
+	logger, shutdown, err := Init(ctx, res, "test-service")
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
@@ -75,11 +77,12 @@ func TestInit_OTLP_LogFormatJSON(t *testing.T) {
 func TestInit_OTLP_LogFormatText(t *testing.T) {
 	t.Setenv(envVar, "otlp")
 	t.Setenv("LOG_FORMAT", "text")
+	t.Setenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4317")
 
 	ctx := t.Context()
 	res := testResource()
 
-	logger, shutdown, err := Init(ctx, res, "localhost:4317", "test-service")
+	logger, shutdown, err := Init(ctx, res, "test-service")
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
@@ -102,11 +105,12 @@ func TestInit_OTLP_LogFormatText(t *testing.T) {
 func TestInit_OTLP_LogFormatFlat(t *testing.T) {
 	t.Setenv(envVar, "otlp")
 	t.Setenv("LOG_FORMAT", "flat")
+	t.Setenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4317")
 
 	ctx := t.Context()
 	res := testResource()
 
-	logger, shutdown, err := Init(ctx, res, "localhost:4317", "test-service")
+	logger, shutdown, err := Init(ctx, res, "test-service")
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
@@ -129,11 +133,12 @@ func TestInit_OTLP_LogFormatFlat(t *testing.T) {
 func TestInit_OTLP_LogFormatStructured(t *testing.T) {
 	t.Setenv(envVar, "otlp")
 	t.Setenv("LOG_FORMAT", "structured")
+	t.Setenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4317")
 
 	ctx := t.Context()
 	res := testResource()
 
-	logger, shutdown, err := Init(ctx, res, "localhost:4317", "test-service")
+	logger, shutdown, err := Init(ctx, res, "test-service")
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
@@ -156,11 +161,12 @@ func TestInit_OTLP_LogFormatStructured(t *testing.T) {
 func TestInit_OTLP_LogFormatEmpty(t *testing.T) {
 	t.Setenv(envVar, "otlp")
 	t.Setenv("LOG_FORMAT", "")
+	t.Setenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4317")
 
 	ctx := t.Context()
 	res := testResource()
 
-	logger, shutdown, err := Init(ctx, res, "localhost:4317", "test-service")
+	logger, shutdown, err := Init(ctx, res, "test-service")
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
@@ -183,11 +189,12 @@ func TestInit_OTLP_LogFormatEmpty(t *testing.T) {
 func TestInit_OTLP_LogFormatCaseInsensitive(t *testing.T) {
 	t.Setenv(envVar, "otlp")
 	t.Setenv("LOG_FORMAT", "JSON")
+	t.Setenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4317")
 
 	ctx := t.Context()
 	res := testResource()
 
-	logger, shutdown, err := Init(ctx, res, "localhost:4317", "test-service")
+	logger, shutdown, err := Init(ctx, res, "test-service")
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
@@ -214,7 +221,7 @@ func TestInit_None(t *testing.T) {
 	ctx := t.Context()
 	res := testResource()
 
-	logger, shutdown, err := Init(ctx, res, "localhost:4317", "test-service")
+	logger, shutdown, err := Init(ctx, res, "test-service")
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
@@ -240,7 +247,7 @@ func TestInit_Empty(t *testing.T) {
 	ctx := t.Context()
 	res := testResource()
 
-	logger, shutdown, err := Init(ctx, res, "localhost:4317", "test-service")
+	logger, shutdown, err := Init(ctx, res, "test-service")
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
@@ -265,7 +272,7 @@ func TestInit_Invalid(t *testing.T) {
 	ctx := t.Context()
 	res := testResource()
 
-	_, shutdown, err := Init(ctx, res, "localhost:4317", "test-service")
+	_, shutdown, err := Init(ctx, res, "test-service")
 	if err == nil {
 		t.Fatal("expected error for unsupported exporter")
 	}

@@ -35,7 +35,7 @@ func TestInit(t *testing.T) {
 		t.Setenv("OTEL_TRACES_EXPORTER", "none")
 		t.Setenv("OTEL_METRICS_EXPORTER", "none")
 		t.Setenv("OTEL_LOGS_EXPORTER", "")
-		t.Setenv("OTEL_EXPORTER_OTLP_ENDPOINT", "localhost:4317")
+		t.Setenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4317")
 
 		logger, shutdown, err := Init(t.Context(), "test-service")
 		if err != nil {
@@ -92,7 +92,7 @@ func TestInit(t *testing.T) {
 		t.Setenv("OTEL_TRACES_EXPORTER", "otlp")
 		t.Setenv("OTEL_METRICS_EXPORTER", "otlp")
 		t.Setenv("OTEL_LOGS_EXPORTER", "otlp")
-		t.Setenv("OTEL_EXPORTER_OTLP_ENDPOINT", "localhost:4317")
+		t.Setenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4317")
 
 		logger, shutdown, err := Init(t.Context(), "test-service")
 		if err != nil {
@@ -142,56 +142,6 @@ func TestInit(t *testing.T) {
 		t.Setenv("OTEL_METRICS_EXPORTER", "none")
 		t.Setenv("OTEL_LOGS_EXPORTER", "none")
 		t.Setenv("SERVICE_VERSION", "2.5.0")
-
-		logger, shutdown, err := Init(t.Context(), "test-service")
-		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
-		}
-
-		if logger == nil {
-			t.Fatal("expected non-nil logger")
-		}
-
-		if shutdown == nil {
-			t.Fatal("expected non-nil shutdown func")
-		}
-
-		shutdownErr := shutdown(t.Context())
-		if shutdownErr != nil {
-			t.Errorf("shutdown error: %v", shutdownErr)
-		}
-	})
-
-	t.Run("with empty OTEL_EXPORTER_OTLP_ENDPOINT defaults to localhost", func(t *testing.T) {
-		t.Setenv("OTEL_TRACES_EXPORTER", "none")
-		t.Setenv("OTEL_METRICS_EXPORTER", "none")
-		t.Setenv("OTEL_LOGS_EXPORTER", "none")
-		t.Setenv("OTEL_EXPORTER_OTLP_ENDPOINT", "")
-
-		logger, shutdown, err := Init(t.Context(), "test-service")
-		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
-		}
-
-		if logger == nil {
-			t.Fatal("expected non-nil logger")
-		}
-
-		if shutdown == nil {
-			t.Fatal("expected non-nil shutdown func")
-		}
-
-		shutdownErr := shutdown(t.Context())
-		if shutdownErr != nil {
-			t.Errorf("shutdown error: %v", shutdownErr)
-		}
-	})
-
-	t.Run("with custom OTEL_EXPORTER_OTLP_ENDPOINT", func(t *testing.T) {
-		t.Setenv("OTEL_TRACES_EXPORTER", "none")
-		t.Setenv("OTEL_METRICS_EXPORTER", "none")
-		t.Setenv("OTEL_LOGS_EXPORTER", "none")
-		t.Setenv("OTEL_EXPORTER_OTLP_ENDPOINT", "collector.example.com:4317")
 
 		logger, shutdown, err := Init(t.Context(), "test-service")
 		if err != nil {

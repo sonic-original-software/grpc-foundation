@@ -19,11 +19,12 @@ func testResource() *resource.Resource {
 
 func TestInit_OTLP(t *testing.T) {
 	t.Setenv(envVar, "otlp")
+	t.Setenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4317")
 
 	ctx := t.Context()
 	res := testResource()
 
-	shutdown, err := Init(ctx, res, "localhost:4317")
+	shutdown, err := Init(ctx, res)
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
@@ -45,7 +46,7 @@ func TestInit_None(t *testing.T) {
 	ctx := t.Context()
 	res := testResource()
 
-	shutdown, err := Init(ctx, res, "localhost:4317")
+	shutdown, err := Init(ctx, res)
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
@@ -66,7 +67,7 @@ func TestInit_Empty(t *testing.T) {
 	ctx := t.Context()
 	res := testResource()
 
-	shutdown, err := Init(ctx, res, "localhost:4317")
+	shutdown, err := Init(ctx, res)
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
@@ -87,7 +88,7 @@ func TestInit_Invalid(t *testing.T) {
 	ctx := t.Context()
 	res := testResource()
 
-	shutdown, err := Init(ctx, res, "localhost:4317")
+	shutdown, err := Init(ctx, res)
 	if err == nil {
 		t.Fatal("expected error for unsupported exporter")
 	}

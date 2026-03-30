@@ -13,7 +13,6 @@ import (
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
 const envVar = "OTEL_TRACES_EXPORTER"
@@ -25,7 +24,7 @@ const envVar = "OTEL_TRACES_EXPORTER"
 //
 // Returns a ShutdownFunc to flush and close the provider.
 func Init(
-	ctx context.Context, res *resource.Resource, endpoint string,
+	ctx context.Context, res *resource.Resource,
 ) (lifecycle.ShutdownFunc, error) {
 	exporterType := os.Getenv(envVar)
 
@@ -40,10 +39,8 @@ func Init(
 
 	// OTLP gRPC exporters use lazy connections - they cannot fail at creation time.
 	// Errors occur later during export if the collector is unreachable.
-	exporter, _ := otlptracegrpc.New(ctx,
-		otlptracegrpc.WithEndpoint(endpoint),
-		otlptracegrpc.WithTLSCredentials(insecure.NewCredentials()),
-	)
+	// Endpoint and TLS are configured via OTEL_EXPORTER_OTLP_ENDPOINT env var.
+	exporter, _ := otlptracegrpc.New(ctx)
 
 	tp := sdktrace.NewTracerProvider(
 		sdktrace.WithBatcher(exporter),

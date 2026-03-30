@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"slices"
 
 	"git.sonicoriginal.software/grpc-foundation/lifecycle"
 	"git.sonicoriginal.software/grpc-foundation/otel/logging"
@@ -37,39 +38,35 @@ func Init(ctx context.Context, serviceName string) (*slog.Logger, lifecycle.Shut
 		),
 	)
 
-	endpoint := os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT")
-	if endpoint == "" {
-		endpoint = "localhost:4317"
-	}
-
 	var shutdowns []lifecycle.ShutdownFunc
 
 	// Logging first so tracing and metrics init can log.
-	log, logShutdown, err := logging.Init(ctx, res, endpoint, serviceName)
+	log, logShutdown, err := logging.Init(ctx, res, serviceName)
 	if err != nil {
 		return nil, nil, fmt.Errorf("logging init: %w", err)
 	}
 	shutdowns = append(shutdowns, logShutdown)
 
-	tracerShutdown, err := tracing.Init(ctx, res, endpoint)
+	tracerShutdown, err := tracing.Init(ctx, res)
 	if err != nil {
 		return nil, nil, fmt.Errorf("tracing init: %w", err)
 	}
 	shutdowns = append(shutdowns, tracerShutdown)
 
-	meterShutdown, err := metrics.Init(ctx, res, endpoint)
+	meterShutdown, err := metrics.Init(ctx, res)
 	if err != nil {
 		return nil, nil, fmt.Errorf("metrics init: %w", err)
 	}
 	shutdowns = append(shutdowns, meterShutdown)
 
-	// Shutdown in reverse init order: metrics, tracing, logging last
-	// so other providers can log during their shutdown.
 	shutdown := func(ctx context.Context) error {
+		// Reverse so shutdown runs in opposite order of init:
+		// metrics, tracing, logging last.
+		slices.Reverse(shutdowns)
 		var errs []error
 
-		for i := len(shutdowns) - 1; i >= 0; i-- {
-			if err := shutdowns[i](ctx); err != nil {
+		for _, fn := range shutdowns {
+			if err := fn(ctx); err != nil {
 				errs = append(errs, err)
 			}
 		}

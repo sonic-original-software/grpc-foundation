@@ -20,7 +20,6 @@ import (
 	"go.opentelemetry.io/otel/log/global"
 	sdklog "go.opentelemetry.io/otel/sdk/log"
 	"go.opentelemetry.io/otel/sdk/resource"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
 const envVar = "OTEL_LOGS_EXPORTER"
@@ -49,20 +48,17 @@ var DefaultAttributeLevels = [][]string{
 //
 // Returns the logger, a ShutdownFunc for the LoggerProvider, and any error.
 func Init(
-	ctx context.Context, res *resource.Resource, endpoint, serviceName string,
+	ctx context.Context, res *resource.Resource, serviceName string,
 ) (*slog.Logger, lifecycle.ShutdownFunc, error) {
 	exporterType := os.Getenv(envVar)
 
-	otelHandler := otelslog.NewHandler(serviceName)
 	shutdown := func(context.Context) error { return nil }
 
 	switch exporterType {
 	case "otlp":
 		// OTLP gRPC exporters use lazy connections - they cannot fail at creation time.
-		exporter, _ := otlploggrpc.New(ctx,
-			otlploggrpc.WithEndpoint(endpoint),
-			otlploggrpc.WithTLSCredentials(insecure.NewCredentials()),
-		)
+		// Endpoint and TLS are configured via OTEL_EXPORTER_OTLP_ENDPOINT env var.
+		exporter, _ := otlploggrpc.New(ctx)
 
 		processor := sdklog.NewBatchProcessor(exporter)
 		lp := sdklog.NewLoggerProvider(
@@ -77,6 +73,9 @@ func Init(
 		return nil, nil, fmt.Errorf("unsupported %s: %s (supported: otlp, none)", envVar, exporterType)
 	}
 
+	// Create handler AFTER SetLoggerProvider — otelslog captures the global
+	// provider at creation time, not lazily per record.
+	otelHandler := otelslog.NewHandler(serviceName)
 	serviceAttr := slog.String("service", serviceName)
 
 	var stdoutHandler slog.Handler
