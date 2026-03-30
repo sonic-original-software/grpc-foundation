@@ -2,6 +2,15 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## 0.1.2 - 2026-03-30
+#### Bug Fixes
+- apply logging handler after assigning to global provider - (2745a46) - Nathan Blair
+#### Continuous Integration
+- require go CI to pass before versioning - (b9a82a5) - Nathan Blair
+- job key reorder - (17439d3) - Nathan Blair
+
+- - -
+
 ## 0.1.1 - 2026-03-29
 #### Bug Fixes
 - (**ci**) CI job name - (f39b6b9) - Nathan Blair
