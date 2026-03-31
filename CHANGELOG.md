@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## 0.2.1 - 2026-03-31
+#### Bug Fixes
+- include baggage with logs and spans - (10ff4ca) - Nathan Blair
+
+- - -
+
 ## 0.2.0 - 2026-03-31
 #### Features
 - add baggage with logging - (7d6c2b1) - Nathan Blair
