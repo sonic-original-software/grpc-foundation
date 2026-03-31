@@ -4,10 +4,8 @@ import (
 	"log/slog"
 	"time"
 
-	"git.sonicoriginal.software/grpc-foundation/logging"
 	"git.sonicoriginal.software/logger"
 
-	grpclogging "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/recovery"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
@@ -17,7 +15,7 @@ import (
 )
 
 // New creates a gRPC server with production-grade defaults.
-// The provided logger is used for recovery logging and request logging via interceptors.
+// The provided logger is used for recovery logging.
 // Additional server options can be provided to customize behavior.
 func New(log *slog.Logger, opts ...grpc.ServerOption) *grpc.Server {
 	if log == nil {
@@ -26,21 +24,12 @@ func New(log *slog.Logger, opts ...grpc.ServerOption) *grpc.Server {
 
 	recoveryHandler := recovery.WithRecoveryHandler(makeRecoveryHandler(log))
 
-	// Logging interceptor using slog
-	logOpts := []grpclogging.Option{
-		grpclogging.WithLogOnEvents(grpclogging.StartCall, grpclogging.FinishCall),
-		grpclogging.WithFieldsFromContext(logging.BaggageFields),
-	}
-
 	standardOpts := []grpc.ServerOption{
-		// Interceptor chain (outermost to innermost)
 		grpc.ChainUnaryInterceptor(
 			recovery.UnaryServerInterceptor(recoveryHandler),
-			grpclogging.UnaryServerInterceptor(logging.InterceptorLogger(log), logOpts...),
 		),
 		grpc.ChainStreamInterceptor(
 			recovery.StreamServerInterceptor(recoveryHandler),
-			grpclogging.StreamServerInterceptor(logging.InterceptorLogger(log), logOpts...),
 		),
 		// OpenTelemetry tracing via stats handler
 		grpc.StatsHandler(otelgrpc.NewServerHandler()),

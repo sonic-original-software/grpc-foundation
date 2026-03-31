@@ -2,7 +2,6 @@ package client
 
 import (
 	"context"
-	"log/slog"
 	"testing"
 
 	"google.golang.org/grpc"
@@ -10,20 +9,7 @@ import (
 
 func TestNew(t *testing.T) {
 	t.Run("creates client with minimal options", func(t *testing.T) {
-		conn, err := New("localhost:50051", nil, nil, nil)
-		if err != nil {
-			t.Fatalf("unexpected error: %v", err)
-		}
-		if conn == nil {
-			t.Fatal("expected conn to be non-nil")
-		}
-		if err := conn.Close(); err != nil {
-			t.Errorf("unexpected error closing conn: %v", err)
-		}
-	})
-
-	t.Run("creates client with logger", func(t *testing.T) {
-		conn, err := New("localhost:50051", slog.Default(), nil, nil)
+		conn, err := New("localhost:50051", nil, nil)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -49,7 +35,7 @@ func TestNew(t *testing.T) {
 			return invoker(ctx, method, req, reply, cc, opts...)
 		}
 
-		conn, err := New("localhost:50051", nil, []grpc.UnaryClientInterceptor{customInterceptor}, nil)
+		conn, err := New("localhost:50051", []grpc.UnaryClientInterceptor{customInterceptor}, nil)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -59,7 +45,6 @@ func TestNew(t *testing.T) {
 		if err := conn.Close(); err != nil {
 			t.Errorf("unexpected error closing conn: %v", err)
 		}
-		// Note: called remains false since we don't make an actual RPC call
 		if called {
 			t.Error("expected called to be false")
 		}
@@ -79,7 +64,7 @@ func TestNew(t *testing.T) {
 			return streamer(ctx, desc, cc, method, opts...)
 		}
 
-		conn, err := New("localhost:50051", nil, nil, []grpc.StreamClientInterceptor{customInterceptor})
+		conn, err := New("localhost:50051", nil, []grpc.StreamClientInterceptor{customInterceptor})
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -89,7 +74,6 @@ func TestNew(t *testing.T) {
 		if err := conn.Close(); err != nil {
 			t.Errorf("unexpected error closing conn: %v", err)
 		}
-		// Note: called remains false since we don't make an actual RPC call
 		if called {
 			t.Error("expected called to be false")
 		}
@@ -97,7 +81,7 @@ func TestNew(t *testing.T) {
 
 	t.Run("creates client with additional dial options", func(t *testing.T) {
 		customOpt := grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(1024))
-		conn, err := New("localhost:50051", nil, nil, nil, customOpt)
+		conn, err := New("localhost:50051", nil, nil, customOpt)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -136,7 +120,6 @@ func TestNew(t *testing.T) {
 
 		conn, err := New(
 			"localhost:50051",
-			slog.Default(),
 			[]grpc.UnaryClientInterceptor{unaryInterceptor},
 			[]grpc.StreamClientInterceptor{streamInterceptor},
 			customOpt,

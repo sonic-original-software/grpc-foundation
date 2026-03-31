@@ -16,7 +16,6 @@ import (
 	"git.sonicoriginal.software/logger/handlers/tee"
 
 	"go.opentelemetry.io/contrib/bridges/otelslog"
-	"go.opentelemetry.io/contrib/processors/baggagecopy"
 	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc"
 	"go.opentelemetry.io/otel/log/global"
 	sdklog "go.opentelemetry.io/otel/sdk/log"
@@ -61,11 +60,9 @@ func Init(
 		// Endpoint and TLS are configured via OTEL_EXPORTER_OTLP_ENDPOINT env var.
 		exporter, _ := otlploggrpc.New(ctx)
 
-		batchProcessor := sdklog.NewBatchProcessor(exporter)
-		logProcessor := baggagecopy.NewLogProcessor(nil)
+		processor := sdklog.NewBatchProcessor(exporter)
 		lp := sdklog.NewLoggerProvider(
-			sdklog.WithProcessor(batchProcessor),
-			sdklog.WithProcessor(logProcessor),
+			sdklog.WithProcessor(processor),
 			sdklog.WithResource(res),
 		)
 		global.SetLoggerProvider(lp)

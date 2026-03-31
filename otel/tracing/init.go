@@ -8,7 +8,6 @@ import (
 
 	"git.sonicoriginal.software/grpc-foundation/lifecycle"
 
-	"go.opentelemetry.io/contrib/processors/baggagecopy"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/propagation"
@@ -43,13 +42,10 @@ func Init(
 	// Endpoint and TLS are configured via OTEL_EXPORTER_OTLP_ENDPOINT env var.
 	exporter, _ := otlptracegrpc.New(ctx)
 
-	spanProcessor := baggagecopy.NewSpanProcessor(nil)
-
 	tp := sdktrace.NewTracerProvider(
 		sdktrace.WithBatcher(exporter),
 		sdktrace.WithResource(res),
 		sdktrace.WithSampler(sdktrace.AlwaysSample()),
-		sdktrace.WithSpanProcessor(spanProcessor),
 	)
 	otel.SetTracerProvider(tp)
 
