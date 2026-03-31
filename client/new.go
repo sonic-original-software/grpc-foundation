@@ -49,6 +49,7 @@ func New(
 
 	logOpts := []grpclogging.Option{
 		grpclogging.WithLogOnEvents(grpclogging.StartCall, grpclogging.FinishCall),
+		grpclogging.WithFieldsFromContext(logging.BaggageFields),
 	}
 
 	// Build standard options for internal service communication

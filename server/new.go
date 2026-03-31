@@ -29,6 +29,7 @@ func New(log *slog.Logger, opts ...grpc.ServerOption) *grpc.Server {
 	// Logging interceptor using slog
 	logOpts := []grpclogging.Option{
 		grpclogging.WithLogOnEvents(grpclogging.StartCall, grpclogging.FinishCall),
+		grpclogging.WithFieldsFromContext(logging.BaggageFields),
 	}
 
 	standardOpts := []grpc.ServerOption{
