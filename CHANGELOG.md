@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## 0.3.0 - 2026-03-31
+#### Features
+- decouple logging and tracing - (9f8b348) - Nathan Blair
+
+- - -
+
 ## 0.2.1 - 2026-03-31
 #### Bug Fixes
 - include baggage with logs and spans - (10ff4ca) - Nathan Blair
