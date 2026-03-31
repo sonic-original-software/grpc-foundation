@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## 0.2.0 - 2026-03-31
+#### Features
+- add baggage with logging - (7d6c2b1) - Nathan Blair
+
+- - -
+
 ## 0.1.2 - 2026-03-30
 #### Bug Fixes
 - apply logging handler after assigning to global provider - (2745a46) - Nathan Blair
