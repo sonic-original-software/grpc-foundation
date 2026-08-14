@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## 0.3.3 - 2026-08-14
+#### Bug Fixes
+- upgrade go version - (eab6fbe) - Nathan Blair
+
+- - -
+
 ## 0.3.2 - 2026-08-14
 #### Bug Fixes
 - update dependencies - (fc4ee09) - Nathan Blair
