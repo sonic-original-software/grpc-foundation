@@ -1,6 +1,6 @@
 module git.sonicoriginal.software/grpc-foundation
 
-go 1.26.5
+go 1.26.6
 
 require (
 	git.sonicoriginal.software/grpc-testing v0.1.0
