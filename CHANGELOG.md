@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## 0.3.2 - 2026-08-14
+#### Bug Fixes
+- update dependencies - (fc4ee09) - Nathan Blair
+
+- - -
+
 ## 0.3.1 - 2026-08-14
 #### Bug Fixes
 - upgrade and fix dependency versions - (15d2db8) - Nathan Blair
