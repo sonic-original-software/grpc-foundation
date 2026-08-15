@@ -3,42 +3,21 @@ package health
 
 import (
 	"context"
-	"time"
 
-	"git.sonicoriginal.software/grpc-foundation/client"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/health/grpc_health_v1"
 )
 
 // Check checks if a service is healthy by calling its gRPC health check endpoint
-func Check(ctx context.Context, address string) string {
-	if address == "" {
-		return ""
-	}
-
-	conn, err := client.New(
-		address,
-		nil,
-		nil,
-		nil,
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-	)
-	if err != nil {
-		return err.Error()
-	}
-
-	defer conn.Close()
-
+func Check(
+	ctx context.Context, conn grpc.ClientConnInterface,
+) (grpc_health_v1.HealthCheckResponse_ServingStatus, error) {
 	healthClient := grpc_health_v1.NewHealthClient(conn)
 
-	checkCtx, cancel := context.WithTimeout(ctx, 3*time.Second)
-	defer cancel()
-
-	resp, err := healthClient.Check(checkCtx, &grpc_health_v1.HealthCheckRequest{})
+	resp, err := healthClient.Check(ctx, &grpc_health_v1.HealthCheckRequest{})
 	if err != nil {
-		return err.Error()
+		return grpc_health_v1.HealthCheckResponse_UNKNOWN, err
 	}
 
-	return resp.Status.String()
+	return resp.Status, nil
 }
