@@ -2,6 +2,14 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## 0.4.0 - 2026-08-15
+#### Features
+- (**client**) dependency connections - (9e7791b) - Nathan Blair
+#### Tests
+- (**health**) add tests around health check calling - (fc1dbb9) - Nathan Blair
+
+- - -
+
 ## 0.3.3 - 2026-08-14
 #### Bug Fixes
 - upgrade go version - (eab6fbe) - Nathan Blair
