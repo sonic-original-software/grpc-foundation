@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## 0.6.1 - 2026-08-29
+#### Bug Fixes
+- expose some grpc.Server methods as traits - (9470b5a) - Nathan Blair
+
+- - -
+
 ## 0.6.0 - 2026-08-29
 #### Features
 - use testing package for mock conn - (027b23e) - Nathan Blair
