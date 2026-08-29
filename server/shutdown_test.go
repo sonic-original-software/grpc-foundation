@@ -21,6 +21,14 @@ func newStopperStub() *stopperStub {
 
 func (s *stopperStub) GracefulStop() { close(s.stopped) }
 
+// blockingStopperStub stands in for a server whose in-flight requests never
+// finish, so the handler has to stop waiting on its own.
+type blockingStopperStub struct {
+	release chan struct{}
+}
+
+func (s *blockingStopperStub) GracefulStop() { <-s.release }
+
 // cancelStub records that the handler cancelled the background context. It is
 // safe to read called once the stopper has fired, because the handler cancels
 // before it stops the server.
@@ -35,14 +43,15 @@ func (c *cancelStub) Cancel() {
 	c.cancel()
 }
 
-// awaitStop fails the test if the handler does not stop the server.
-func awaitStop(t *testing.T, stopper *stopperStub) {
+// await fails the test if signal does not fire. The ceiling turns a handler
+// that never gets there into a failure rather than a hang.
+func await(t *testing.T, signal <-chan struct{}, message string) {
 	t.Helper()
 
 	select {
-	case <-stopper.stopped:
+	case <-signal:
 	case <-time.After(5 * time.Second):
-		t.Fatal("server was not stopped")
+		t.Fatal(message)
 	}
 }
 
@@ -55,7 +64,7 @@ func TestHandleGracefulShutdown(t *testing.T) {
 
 		cancel()
 
-		awaitStop(t, stopper)
+		await(t, stopper.stopped, "server was not stopped")
 	})
 
 	t.Run("cancels the background context before stopping", func(t *testing.T) {
@@ -67,11 +76,29 @@ func TestHandleGracefulShutdown(t *testing.T) {
 
 		cancel()
 
-		awaitStop(t, stopper)
+		await(t, stopper.stopped, "server was not stopped")
 
 		if !tracked.called {
 			t.Fatal("cancel function should have been called")
 		}
+	})
+
+	t.Run("returns when in-flight requests do not finish in time", func(t *testing.T) {
+		ctx, cancel := context.WithCancel(t.Context())
+		stopper := &blockingStopperStub{release: make(chan struct{})}
+		defer close(stopper.release)
+
+		returned := make(chan struct{})
+		go func() {
+			HandleGracefulShutdown(
+				ctx, cancel, slog.New(slog.DiscardHandler), stopper, time.Millisecond,
+			)
+			close(returned)
+		}()
+
+		cancel()
+
+		await(t, returned, "handler did not stop waiting for the server")
 	})
 
 	t.Run("stops the server on OS signal", func(t *testing.T) {
@@ -95,6 +122,6 @@ func TestHandleGracefulShutdown(t *testing.T) {
 			t.Fatalf("unexpected error sending signal: %v", err)
 		}
 
-		awaitStop(t, stopper)
+		await(t, stopper.stopped, "server was not stopped")
 	})
 }

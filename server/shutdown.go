@@ -50,6 +50,18 @@ func HandleGracefulShutdown(
 
 	// 2. Stop gRPC server (stop accepting new requests, finish in-flight)
 	shutdownLog.Info("Stopping gRPC server")
-	grpcServer.GracefulStop()
-	shutdownLog.Info("gRPC server stopped")
+
+	stopped := make(chan struct{})
+	go func() {
+		grpcServer.GracefulStop()
+		close(stopped)
+	}()
+
+	select {
+	case <-stopped:
+		shutdownLog.Info("gRPC server stopped")
+	case <-time.After(cleanupTimeout):
+		shutdownLog.Warn("Timed out waiting for in-flight requests",
+			slog.Duration("timeout", cleanupTimeout))
+	}
 }
