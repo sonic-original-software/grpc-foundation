@@ -4,21 +4,26 @@ import (
 	"context"
 	"testing"
 
-	"git.sonicoriginal.software/grpc-foundation/health/tests"
+	"git.sonicoriginal.software/grpc-testing/mocks/clientconn"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/status"
 )
 
+// respondServing answers the health check with SERVING.
+func respondServing(_ context.Context, _ string, _, reply any) error {
+	reply.(*grpc_health_v1.HealthCheckResponse).Status =
+		grpc_health_v1.HealthCheckResponse_SERVING
+
+	return nil
+}
+
 func TestCheck(t *testing.T) {
 	t.Run("serving", func(t *testing.T) {
-		servingStatus := grpc_health_v1.HealthCheckResponse_SERVING
-		conn := &tests.MockClientConn{
-			Response: &grpc_health_v1.HealthCheckResponse{Status: servingStatus},
-		}
+		conn := &clientconn.Mock{InvokeFn: respondServing}
 		got, _ := Check(t.Context(), conn)
-		want := servingStatus
+		want := grpc_health_v1.HealthCheckResponse_SERVING
 
 		if got != want {
 			t.Errorf("expected %q, got %q", want, got)
@@ -27,7 +32,7 @@ func TestCheck(t *testing.T) {
 
 	t.Run("unavailable", func(t *testing.T) {
 		err := status.Error(codes.Unavailable, "health service unavailable")
-		conn := &tests.MockClientConn{Err: err}
+		conn := &clientconn.Mock{Err: err}
 		_, got := Check(t.Context(), conn)
 		want := err
 
@@ -40,7 +45,7 @@ func TestCheck(t *testing.T) {
 		ctx, cancel := context.WithTimeout(t.Context(), 0)
 		defer cancel()
 
-		conn := &tests.MockClientConn{}
+		conn := &clientconn.Mock{}
 		_, got := Check(ctx, conn)
 		want := context.DeadlineExceeded
 
