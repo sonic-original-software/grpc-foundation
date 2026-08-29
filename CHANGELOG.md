@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## 0.6.0 - 2026-08-29
+#### Features
+- use testing package for mock conn - (027b23e) - Nathan Blair
+
+- - -
+
 ## 0.5.0 - 2026-08-29
 #### Features
 - remove Dependency interface - (246c196) - Nathan Blair
