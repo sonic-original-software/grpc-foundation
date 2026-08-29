@@ -27,9 +27,11 @@ func New(log *slog.Logger, opts ...grpc.ServerOption) *grpc.Server {
 	standardOpts := []grpc.ServerOption{
 		grpc.ChainUnaryInterceptor(
 			recovery.UnaryServerInterceptor(recoveryHandler),
+			makeLoggerUnaryInterceptor(log),
 		),
 		grpc.ChainStreamInterceptor(
 			recovery.StreamServerInterceptor(recoveryHandler),
+			makeLoggerStreamInterceptor(log),
 		),
 		// OpenTelemetry tracing via stats handler
 		grpc.StatsHandler(otelgrpc.NewServerHandler()),
