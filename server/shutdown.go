@@ -7,9 +7,12 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
-
-	"google.golang.org/grpc"
 )
+
+// GracefulStopper stops a gRPC server once its in-flight requests finish
+type GracefulStopper interface {
+	GracefulStop()
+}
 
 // HandleGracefulShutdown waits for shutdown signals and orchestrates cleanup.
 // It blocks until either an OS signal (SIGINT/SIGTERM) is received or the context is cancelled.
@@ -22,7 +25,7 @@ func HandleGracefulShutdown(
 	ctx context.Context,
 	cancel context.CancelFunc,
 	log *slog.Logger,
-	grpcServer *grpc.Server,
+	grpcServer GracefulStopper,
 	cleanupTimeout time.Duration,
 ) {
 	shutdownLog := log.With(slog.String("component", "shutdown-handler"))

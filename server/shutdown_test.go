@@ -4,98 +4,89 @@ import (
 	"context"
 	"log/slog"
 	"os"
-	"sync"
 	"syscall"
 	"testing"
 	"time"
-
-	"google.golang.org/grpc"
 )
 
+// stopperStub records that the handler stopped the server. Closing the channel
+// gives a test something to wait on instead of a sleep or the handler's return.
+type stopperStub struct {
+	stopped chan struct{}
+}
+
+func newStopperStub() *stopperStub {
+	return &stopperStub{stopped: make(chan struct{})}
+}
+
+func (s *stopperStub) GracefulStop() { close(s.stopped) }
+
+// cancelStub records that the handler cancelled the background context. It is
+// safe to read called once the stopper has fired, because the handler cancels
+// before it stops the server.
+type cancelStub struct {
+	cancel context.CancelFunc
+	called bool
+}
+
+func (c *cancelStub) Cancel() {
+	c.called = true
+
+	c.cancel()
+}
+
+// awaitStop fails the test if the handler does not stop the server.
+func awaitStop(t *testing.T, stopper *stopperStub) {
+	t.Helper()
+
+	select {
+	case <-stopper.stopped:
+	case <-time.After(5 * time.Second):
+		t.Fatal("server was not stopped")
+	}
+}
+
 func TestHandleGracefulShutdown(t *testing.T) {
-	t.Run("shuts down on context cancellation", func(t *testing.T) {
+	t.Run("stops the server on context cancellation", func(t *testing.T) {
 		ctx, cancel := context.WithCancel(t.Context())
+		stopper := newStopperStub()
 
-		server := grpc.NewServer()
+		go HandleGracefulShutdown(ctx, cancel, slog.New(slog.DiscardHandler), stopper, 5*time.Second)
 
-		var wg sync.WaitGroup
-
-		wg.Go(func() {
-			HandleGracefulShutdown(ctx, cancel, slog.Default(), server, 5*time.Second)
-		})
-
-		// Trigger shutdown via context cancellation
 		cancel()
 
-		// Wait for shutdown with timeout
-		done := make(chan struct{})
-		go func() {
-			wg.Wait()
-			close(done)
-		}()
+		awaitStop(t, stopper)
+	})
 
-		select {
-		case <-done:
-			// Success
-		case <-time.After(5 * time.Second):
-			t.Fatal("timeout waiting for shutdown")
+	t.Run("cancels the background context before stopping", func(t *testing.T) {
+		ctx, cancel := context.WithCancel(t.Context())
+		stopper := newStopperStub()
+		tracked := &cancelStub{cancel: cancel}
+
+		go HandleGracefulShutdown(ctx, tracked.Cancel, slog.New(slog.DiscardHandler), stopper, 5*time.Second)
+
+		cancel()
+
+		awaitStop(t, stopper)
+
+		if !tracked.called {
+			t.Fatal("cancel function should have been called")
 		}
 	})
 
-	t.Run("cancel func is called during shutdown", func(t *testing.T) {
-		ctx, cancel := context.WithCancel(t.Context())
-
-		server := grpc.NewServer()
-
-		// Track whether the cancel was called
-		cancelCalled := false
-		wrappedCancel := func() {
-			cancelCalled = true
-			cancel()
-		}
-
-		var wg sync.WaitGroup
-
-		wg.Go(func() {
-			HandleGracefulShutdown(ctx, wrappedCancel, slog.Default(), server, 5*time.Second)
-		})
-
-		// Trigger shutdown via the original cancel (not the wrapped one)
-		// This simulates external cancellation
-		cancel()
-
-		done := make(chan struct{})
-		go func() {
-			wg.Wait()
-			close(done)
-		}()
-
-		select {
-		case <-done:
-			if !cancelCalled {
-				t.Fatal("cancel function should have been called")
-			}
-		case <-time.After(5 * time.Second):
-			t.Fatal("timeout waiting for shutdown")
-		}
-	})
-
-	t.Run("shuts down on OS signal", func(t *testing.T) {
+	t.Run("stops the server on OS signal", func(t *testing.T) {
 		ctx, cancel := context.WithCancel(t.Context())
 		defer cancel()
 
-		server := grpc.NewServer()
+		stopper := newStopperStub()
 
-		var wg sync.WaitGroup
+		go HandleGracefulShutdown(ctx, cancel, slog.New(slog.DiscardHandler), stopper, 5*time.Second)
 
-		wg.Go(func() {
-			HandleGracefulShutdown(ctx, cancel, slog.Default(), server, 5*time.Second)
-		})
-
-		// Wait for handler to be ready to receive signals
+		// The handler has to reach signal.Notify before the signal is sent, or
+		// SIGTERM ends the test process instead. Nothing observable marks that
+		// point, so the wait is a sleep.
 		time.Sleep(50 * time.Millisecond)
 
-		// Send SIGTERM to trigger signal-based shutdown
 		proc, err := os.FindProcess(os.Getpid())
 		if err != nil {
 			t.Fatalf("unexpected error finding process: %v", err)
@@ -104,18 +95,6 @@ func TestHandleGracefulShutdown(t *testing.T) {
 			t.Fatalf("unexpected error sending signal: %v", err)
 		}
 
-		// Wait for shutdown with timeout
-		done := make(chan struct{})
-		go func() {
-			wg.Wait()
-			close(done)
-		}()
-
-		select {
-		case <-done:
-			// Success - shutdown triggered by OS signal
-		case <-time.After(5 * time.Second):
-			t.Fatal("timeout waiting for signal-triggered shutdown")
-		}
+		awaitStop(t, stopper)
 	})
 }

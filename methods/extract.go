@@ -11,6 +11,11 @@ import (
 // ServiceFilter determines whether a service should be included
 type ServiceFilter func(serviceName string) bool
 
+// ServiceInfoProvider reports the services registered on a gRPC server
+type ServiceInfoProvider interface {
+	GetServiceInfo() map[string]grpc.ServiceInfo
+}
+
 // DefaultServiceFilter filters out gRPC infrastructure services (health, reflection, etc.)
 func DefaultServiceFilter(serviceName string) bool {
 	return !strings.HasPrefix(serviceName, "grpc.")
@@ -49,15 +54,15 @@ func NewPatternFilter(includePrefixes, excludePrefixes []string) ServiceFilter {
 // Extract all registered method names from a gRPC server
 // Returns fully qualified method names (e.g., "/package.Service/Method")
 // If filter is nil, ALL services are included (no filtering)
-func Extract(server *grpc.Server, filter ServiceFilter) []string {
-	if server == nil {
+func Extract(infoProvider ServiceInfoProvider, filter ServiceFilter) []string {
+	if infoProvider == nil {
 		return []string{}
 	}
 
 	methods := []string{}
 
 	// Get all registered services
-	serviceInfo := server.GetServiceInfo()
+	serviceInfo := infoProvider.GetServiceInfo()
 
 	for serviceName, info := range serviceInfo {
 		// Apply filter if provided
