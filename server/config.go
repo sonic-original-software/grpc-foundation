@@ -10,6 +10,7 @@ import (
 // Default gRPC server connection settings.
 const (
 	DefaultAddress = ":50051"
+	DefaultVersion = "dev"
 
 	DefaultMaxConnectionIdle     = 5 * time.Minute
 	DefaultMaxConnectionAge      = 10 * time.Minute
@@ -22,7 +23,9 @@ const (
 
 // Environment variable names for runtime configuration.
 const (
+	EnvServerName            = "GRPC_SERVER_NAME"
 	EnvServerAddress         = "GRPC_SERVER_ADDRESS"
+	EnvServerVersion         = "GRPC_SERVER_VERSION"
 	EnvMaxConnectionIdle     = "GRPC_MAX_CONNECTION_IDLE"
 	EnvMaxConnectionAge      = "GRPC_MAX_CONNECTION_AGE"
 	EnvMaxConnectionAgeGrace = "GRPC_MAX_CONNECTION_AGE_GRACE"
@@ -35,6 +38,18 @@ const (
 // Address returns the server address from environment or the default value.
 func Address() string {
 	return getEnvOrDefault(EnvServerAddress, DefaultAddress)
+}
+
+// Version returns the server version from environment or the default value.
+func Version() string {
+	return getEnvOrDefault(EnvServerVersion, DefaultVersion)
+}
+
+// Name returns the server name from environment or the caller's fallback.
+// There is no universal default: the fallback is the server's own identity,
+// and the environment overrides it per deployment.
+func Name(fallback string) string {
+	return getEnvOrDefault(EnvServerName, fallback)
 }
 
 // getEnvOrDefault returns the environment variable value or default if not set.

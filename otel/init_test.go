@@ -12,7 +12,7 @@ func TestInit(t *testing.T) {
 		t.Setenv("OTEL_METRICS_EXPORTER", "none")
 		t.Setenv("OTEL_LOGS_EXPORTER", "none")
 
-		logger, shutdown, err := Init(t.Context(), "test-service")
+		logger, shutdown, err := Init(t.Context(), "test-service", "1.2.3")
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -37,7 +37,7 @@ func TestInit(t *testing.T) {
 		t.Setenv("OTEL_LOGS_EXPORTER", "")
 		t.Setenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4317")
 
-		logger, shutdown, err := Init(t.Context(), "test-service")
+		logger, shutdown, err := Init(t.Context(), "test-service", "1.2.3")
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -60,7 +60,7 @@ func TestInit(t *testing.T) {
 		t.Setenv("OTEL_METRICS_EXPORTER", "none")
 		t.Setenv("OTEL_LOGS_EXPORTER", "console")
 
-		_, _, err := Init(t.Context(), "test-service")
+		_, _, err := Init(t.Context(), "test-service", "1.2.3")
 		if err == nil {
 			t.Fatal("expected error for unsupported console log exporter")
 		}
@@ -71,7 +71,7 @@ func TestInit(t *testing.T) {
 		t.Setenv("OTEL_METRICS_EXPORTER", "none")
 		t.Setenv("OTEL_LOGS_EXPORTER", "none")
 
-		_, _, err := Init(t.Context(), "test-service")
+		_, _, err := Init(t.Context(), "test-service", "1.2.3")
 		if err == nil {
 			t.Fatal("expected error for unsupported trace exporter")
 		}
@@ -82,7 +82,7 @@ func TestInit(t *testing.T) {
 		t.Setenv("OTEL_METRICS_EXPORTER", "invalid")
 		t.Setenv("OTEL_LOGS_EXPORTER", "none")
 
-		_, _, err := Init(t.Context(), "test-service")
+		_, _, err := Init(t.Context(), "test-service", "1.2.3")
 		if err == nil {
 			t.Fatal("expected error for unsupported metric exporter")
 		}
@@ -94,7 +94,7 @@ func TestInit(t *testing.T) {
 		t.Setenv("OTEL_LOGS_EXPORTER", "otlp")
 		t.Setenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4317")
 
-		logger, shutdown, err := Init(t.Context(), "test-service")
+		logger, shutdown, err := Init(t.Context(), "test-service", "1.2.3")
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -118,7 +118,7 @@ func TestInit(t *testing.T) {
 		t.Setenv("OTEL_LOGS_EXPORTER", "none")
 		t.Setenv("SERVICE_VERSION", "")
 
-		logger, shutdown, err := Init(t.Context(), "test-service")
+		logger, shutdown, err := Init(t.Context(), "test-service", "1.2.3")
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -143,7 +143,7 @@ func TestInit(t *testing.T) {
 		t.Setenv("OTEL_LOGS_EXPORTER", "none")
 		t.Setenv("SERVICE_VERSION", "2.5.0")
 
-		logger, shutdown, err := Init(t.Context(), "test-service")
+		logger, shutdown, err := Init(t.Context(), "test-service", "1.2.3")
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
