@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## 0.5.0 - 2026-08-29
+#### Features
+- remove Dependency interface - (246c196) - Nathan Blair
+
+- - -
+
 ## 0.4.1 - 2026-08-15
 #### Bug Fixes
 - add GetState to Dependency interface - (d81cdef) - Nathan Blair
