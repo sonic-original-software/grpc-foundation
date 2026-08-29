@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## 0.8.0 - 2026-08-29
+#### Features
+- otel gets its server name and version passed in - (5f7566f) - Nathan Blair
+
+- - -
+
 ## 0.7.0 - 2026-08-29
 #### Features
 - dedicated listen helper constructor - (25f89b8) - Nathan Blair
