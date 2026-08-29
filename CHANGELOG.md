@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## 0.10.0 - 2026-08-29
+#### Features
+- include trace and span IDs in log messages - (ddef45d) - Nathan Blair
+
+- - -
+
 ## 0.9.1 - 2026-08-29
 #### Bug Fixes
 - bound gracefulshutdown with a timeout - (f608260) - Nathan Blair
